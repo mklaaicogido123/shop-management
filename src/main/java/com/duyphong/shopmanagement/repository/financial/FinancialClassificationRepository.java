@@ -1,7 +1,7 @@
-package com.duyphong.shopmanagement.repository;
+package com.duyphong.shopmanagement.repository.financial;
 
-import com.duyphong.shopmanagement.consts.TransactionType;
 import com.duyphong.shopmanagement.entity.transaction.FinancialClassification;
+import com.duyphong.shopmanagement.enums.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,5 +1,8 @@
 package com.duyphong.shopmanagement.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +25,33 @@ import java.util.Map;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    
+
+    @ExceptionHandler(value = AppException.class)
+    ResponseEntity<ErrorResponse> handlingAppException(IllegalArgumentException exception) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(exception.getMessage())
+                .message(exception.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    ResponseEntity<ErrorResponse> handlingIllegalArgumentException(IllegalArgumentException exception) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(exception.getMessage())
+                .message(exception.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
 
     /**
      * Handle validation errors from @Valid annotations
+     *
      * @param ex the MethodArgumentNotValidException
      * @return ResponseEntity with error details
      */
@@ -55,6 +79,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle constraint validation errors from @NotEmpty, @NotNull etc. on path variables
+     *
      * @param ex the ConstraintViolationException
      * @return ResponseEntity with error details
      */
@@ -83,6 +108,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle path variable type mismatch errors
+     *
      * @param ex the MethodArgumentTypeMismatchException
      * @return ResponseEntity with error details
      */
@@ -102,6 +128,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle JSON parsing errors (including date format and enum errors)
+     *
      * @param ex the HttpMessageNotReadableException
      * @return ResponseEntity with error details
      */
@@ -112,15 +139,15 @@ public class GlobalExceptionHandler {
         String message = "Invalid JSON format";
 
         // Check if the error message contains MealType validation error
-        if (ex.getMessage() != null && ex.getMessage().contains("MealType")) {
+        if (ex.getMessage() != null && ex.getMessage().contains("TransactionType")) {
             Map<String, String> fieldErrors = new HashMap<>();
-            fieldErrors.put("mealType", "Meal type must be either LUNCH or DINNER");
+            fieldErrors.put("TransactionType", "Loại giao dịch phải là INCOME hoặc EXPENSE");
 
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .timestamp(LocalDateTime.now())
                     .status(HttpStatus.BAD_REQUEST.value())
-                    .error("Invalid Value")
-                    .message("Invalid meal type value")
+                    .error("Invalid transaction type")
+                    .message("Invalid transaction type")
                     .fieldErrors(fieldErrors)
                     .build();
 
@@ -157,32 +184,6 @@ public class GlobalExceptionHandler {
 
                 return ResponseEntity.badRequest().body(errorResponse);
             }
-
-            // Handle enum format errors (like MealType)
-            if (invalidFormatEx.getTargetType() != null &&
-                    invalidFormatEx.getTargetType().isEnum()) {
-
-                String fieldName = "field";
-                if (invalidFormatEx.getPath() != null && !invalidFormatEx.getPath().isEmpty()) {
-                    fieldName = invalidFormatEx.getPath().get(invalidFormatEx.getPath().size() - 1).getFieldName();
-                }
-
-                Map<String, String> fieldErrors = new HashMap<>();
-                String enumErrorMessage = fieldName.equals("mealType") ?
-                        "Meal type must be either LUNCH or DINNER" :
-                        String.format("Invalid value for %s. Please check allowed values.", fieldName);
-                fieldErrors.put(fieldName, enumErrorMessage);
-
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .timestamp(LocalDateTime.now())
-                        .status(HttpStatus.BAD_REQUEST.value())
-                        .error("Invalid Value")
-                        .message("Invalid enum value")
-                        .fieldErrors(fieldErrors)
-                        .build();
-
-                return ResponseEntity.badRequest().body(errorResponse);
-            }
         }
 
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -197,6 +198,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle generic exceptions
+     *
      * @param ex the Exception
      * @return ResponseEntity with error details
      */

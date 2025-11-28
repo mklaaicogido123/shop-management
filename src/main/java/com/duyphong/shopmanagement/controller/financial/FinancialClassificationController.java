@@ -1,8 +1,9 @@
-package com.duyphong.shopmanagement.controller;
+package com.duyphong.shopmanagement.controller.financial;
 
-import com.duyphong.shopmanagement.consts.TransactionType;
 import com.duyphong.shopmanagement.entity.transaction.FinancialClassification;
-import com.duyphong.shopmanagement.service.FinancialClassificationService;
+import com.duyphong.shopmanagement.enums.TransactionType;
+import com.duyphong.shopmanagement.model.request.revenue.CreateOrUpdateClassificationRequest;
+import com.duyphong.shopmanagement.service.financial.FinancialClassificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/classifications")
+@RequestMapping("/api/classifications")
 public class FinancialClassificationController {
 
     private final FinancialClassificationService classificationService;
@@ -20,18 +21,16 @@ public class FinancialClassificationController {
     }
 
     /**
-     * POST /api/v1/classifications
+     * POST /apiclassifications
      * Tạo mới hoặc cập nhật một phân loại
      */
     @PostMapping
-    public ResponseEntity<FinancialClassification> createOrUpdateClassification(@RequestBody FinancialClassification classification) {
-        // Lưu ý: Trong thực tế, bạn nên dùng DTO cho đầu vào thay vì Entity trực tiếp
-        FinancialClassification savedClassification = classificationService.saveClassification(classification);
-        return new ResponseEntity<>(savedClassification, HttpStatus.CREATED);
+    public ResponseEntity<String> createOrUpdateClassification(@RequestBody CreateOrUpdateClassificationRequest request) {
+        return new ResponseEntity<>(classificationService.saveClassification(request), HttpStatus.CREATED);
     }
 
     /**
-     * GET /api/v1/classifications
+     * GET /api/classifications
      * Lấy tất cả các phân loại
      */
     @GetMapping
@@ -41,7 +40,7 @@ public class FinancialClassificationController {
     }
 
     /**
-     * GET /api/v1/classifications/type?type=INCOME
+     * GET /api/classifications/type?type=INCOME
      * Lấy phân loại theo loại (INCOME/EXPENSE)
      */
     @GetMapping("/type")
@@ -51,12 +50,11 @@ public class FinancialClassificationController {
     }
 
     /**
-     * DELETE /api/v1/classifications/{id}
+     * DELETE /api/classifications/{id}
      * Xóa một phân loại
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClassification(@PathVariable String id) {
-        classificationService.deleteClassification(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteClassification(@PathVariable String id) {
+        return ResponseEntity.ok(classificationService.deleteClassification(id));
     }
 }

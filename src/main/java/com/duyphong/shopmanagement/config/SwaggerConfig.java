@@ -1,9 +1,12 @@
 package com.duyphong.shopmanagement.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +18,8 @@ import java.util.List;
 public class SwaggerConfig {
     @Value("${server.port:8080}")
     private String serverPort;
+
+    private static final String SECURITY_SCHEME_NAME = "Bearer Authentication";
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -37,9 +42,21 @@ public class SwaggerConfig {
                 .version("1.0.0")
                 .contact(contact)
                 .license(license);
+        SecurityScheme securityScheme = new SecurityScheme()
+                .name(SECURITY_SCHEME_NAME)
+                .type(SecurityScheme.Type.HTTP) // Loại bảo mật là HTTP
+                .scheme("bearer")               // Scheme là bearer
+                .bearerFormat("JWT")            // Định dạng token là JWT
+                .description("Enter JWT Bearer token **_without_** the prefix 'Bearer '.");
+
+        SecurityRequirement securityRequirement = new SecurityRequirement().addList(SECURITY_SCHEME_NAME);
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(localServer));
+                .servers(List.of(localServer))
+                // Thêm Components định nghĩa Security Scheme
+                .components(new Components().addSecuritySchemes(SECURITY_SCHEME_NAME, securityScheme))
+                // Áp dụng Security Requirement
+                .addSecurityItem(securityRequirement);
     }
 }

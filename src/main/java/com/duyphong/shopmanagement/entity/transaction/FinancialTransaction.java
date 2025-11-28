@@ -2,18 +2,17 @@ package com.duyphong.shopmanagement.entity.transaction;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FinancialTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
